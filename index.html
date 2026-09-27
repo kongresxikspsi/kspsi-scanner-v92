@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+  >
+
+  <meta name="theme-color" content="#0b1f3a">
+
+  <title>KONGRES XI KSPSI — Scanner</title>
+
+  <!-- QR Scanner Library -->
+  <script src="https://unpkg.com/html5-qrcode" defer></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #f3f6fa;
+      color: #172033;
+    }
+
+    body {
+      display: flex;
+      justify-content: center;
+    }
+
+    .app {
+      width: 100%;
+      max-width: 520px;
+      min-height: 100vh;
+      background: #ffffff;
+    }
+
+    .header {
+      background: linear-gradient(
+        135deg,
+        #0b1f3a,
+        #123f72
+      );
+
+      color: white;
+      padding: 20px 18px 18px;
+      text-align: center;
+    }
+
+    .header-title {
+      font-size: 21px;
+      font-weight: 800;
+      letter-spacing: .4px;
+    }
+
+    .header-subtitle {
+      margin-top: 5px;
+      font-size: 13px;
+      opacity: .85;
+    }
+
+    .content {
+      padding: 16px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
+      box-shadow: 0 5px 18px rgba(0,0,0,.06);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .scanner-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+
+    .scanner-subtitle {
+      font-size: 13px;
+      color: #667085;
+      line-height: 1.5;
+    }
+
+    #reader {
+      width: 100%;
+      margin-top: 14px;
+      border-radius: 14px;
+      overflow: hidden;
+      background: #000;
+    }
+
+    #reader video {
+      width: 100% !important;
+      height: auto !important;
+      border-radius: 14px;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    button,
+    select {
+      width: 100%;
+      min-height: 48px;
+      border-radius: 11px;
+      border: 1px solid #ccd5e1;
+      font-size: 14px;
+      font-weight: 700;
+      background: white;
+      color: #172033;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button.primary {
+      background: #0b1f3a;
+      color: white;
+      border-color: #0b1f3a;
+    }
+
+    button.danger {
+      background: #fff1f2;
+      color: #b42318;
+      border-color: #fecdd3;
+    }
+
+    button:disabled,
+    select:disabled {
+      opacity: .55;
+      cursor: not-allowed;
+    }
+
+    .camera-select {
+      margin-top: 10px;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 13px 14px;
+      border-radius: 11px;
+      background: #f1f5f9;
+      color: #334155;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .status.ok {
+      background: #ecfdf3;
+      color: #067647;
+    }
+
+    .status.error {
+      background: #fef3f2;
+      color: #b42318;
+    }
+
+    .status.warning {
+      background: #fffaeb;
+      color: #b54708;
+    }
+
+    .result {
+      display: none;
+    }
+
+    .result.visible {
+      display: block;
+    }
+
+    .result-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      color: #667085;
+      letter-spacing: .5px;
+      margin-bottom: 5px;
+    }
+
+    .result-token {
+      word-break: break-all;
+      font-size: 16px;
+      font-weight: 800;
+      color: #0b1f3a;
+      padding: 12px;
+      background: #f8fafc;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+    }
+
+    .info {
+      font-size: 12px;
+      color: #667085;
+      line-height: 1.6;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 18px;
+      color: #98a2b3;
+      font-size: 11px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (min-width: 600px) {
+      body {
+        padding: 20px 0;
+      }
+
+      .app {
+        min-height: calc(100vh - 40px);
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 8px 35px rgba(0,0,0,.08);
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <div class="header">
+    <div class="header-title">
+      KONGRES XI KSPSI
+    </div>
+
+    <div class="header-subtitle">
+      STANDALONE QR SCANNER V9.2
+    </div>
+  </div>
+
+  <div class="content">
+
+    <div class="card">
+
+      <div class="scanner-title">
+        Scanner Registrasi
+      </div>
+
+      <div class="scanner-subtitle">
+        Gunakan kamera belakang untuk membaca QR peserta.
+      </div>
+
+      <div id="reader"></div>
+
+      <select
+        id="cameraSelect"
+        class="camera-select"
+        disabled
+      >
+        <option value="">
+          Memuat kamera...
+        </option>
+      </select>
+
+      <div class="controls">
+
+        <button
+          id="startButton"
+          class="primary"
+          onclick="startScanner()"
+        >
+          MULAI SCANNER
+        </button>
+
+        <button
+          id="stopButton"
+          class="danger"
+          onclick="stopScanner()"
+          disabled
+        >
+          STOP
+        </button>
+
+      </div>
+
+      <div
+        id="scannerStatus"
+        class="status"
+      >
+        Menunggu scanner.
+      </div>
+
+    </div>
+
+
+    <div
+      id="resultCard"
+      class="card result"
+    >
+
+      <div class="scanner-title">
+        QR TERBACA
+      </div>
+
+      <div class="result-label">
+        QR Token
+      </div>
+
+      <div
+        id="resultToken"
+        class="result-token"
+      >
+      </div>
+
+      <div
+        id="resultStatus"
+        class="status ok"
+      >
+        QR berhasil dibaca.
+      </div>
+
+    </div>
+
+
+    <div class="card">
+
+      <div class="scanner-title">
+        Informasi
+      </div>
+
+      <div class="info">
+
+        V9.2 menggunakan kamera browser secara langsung.
+        Sistem ini tidak bergantung pada merek HP tertentu.
+
+        <br><br>
+
+        Mendukung perangkat Android dan iPhone selama
+        browser memberikan akses kamera melalui koneksi HTTPS.
+
+        <br><br>
+
+        Pada tahap ini QR hanya dibaca dan belum melakukan
+        CHECK-IN atau perubahan database.
+
+      </div>
+
+    </div>
+
+  </div>
+
+  <div class="footer">
+    KONGRES XI KSPSI · Standalone Scanner V9.2
+  </div>
+
+</div>
+
+
+<script>
+
+  let scanner = null;
+
+  let scannerRunning = false;
+
+  let cameras = [];
+
+  let selectedCameraId = null;
+
+  let lastScannedText = '';
+
+  let lastScanTime = 0;
+
+
+  /*
+   * =====================================================
+   * INITIALIZATION
+   * =====================================================
+   */
+
+  window.addEventListener('load', function() {
+
+    setStatus(
+      'Memeriksa perangkat kamera...',
+      'warning'
+    );
+
+    setTimeout(function() {
+
+      initializeCameraList();
+
+    }, 500);
+
+  });
+
+
+  /*
+   * =====================================================
+   * CAMERA INITIALIZATION
+   * =====================================================
+   */
+
+  async function initializeCameraList() {
+
+    try {
+
+      if (!navigator.mediaDevices ||
+          !navigator.mediaDevices.getUserMedia) {
+
+        throw new Error(
+          'Browser tidak mendukung akses kamera.'
+        );
+
+      }
+
+
+      /*
+       * Request permission first.
+       *
+       * This is important because some browsers do not
+       * expose camera labels before permission is granted.
+       */
+
+      const stream =
+        await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false
+        });
+
+
+      /*
+       * Immediately release camera.
+       */
+
+      stream.getTracks().forEach(function(track) {
+        track.stop();
+      });
+
+
+      cameras =
+        await Html5Qrcode.getCameras();
+
+
+      if (!cameras || cameras.length === 0) {
+
+        throw new Error(
+          'Kamera tidak ditemukan pada perangkat.'
+        );
+
+      }
+
+
+      populateCameraSelect(cameras);
+
+
+      setStatus(
+        cameras.length +
+        ' kamera terdeteksi. Tekan MULAI SCANNER.',
+        'ok'
+      );
+
+
+    } catch (error) {
+
+      handleCameraError(error);
+
+    }
+
+  }
+
+
+  /*
+   * =====================================================
+   * CAMERA SELECT
+   * =====================================================
+   */
+
+  function populateCameraSelect(list) {
+
+    const select =
+      document.getElementById('cameraSelect');
+
+    select.innerHTML = '';
+
+
+    list.forEach(function(camera, index) {
+
+      const option =
+        document.createElement('option');
+
+      option.value = camera.id;
+
+      let label =
+        camera.label ||
+        ('Kamera ' + (index + 1));
+
+
+      /*
+       * Try to prioritize rear camera.
+       */
+
+      const lower =
+        label.toLowerCase();
+
+      if (
+        lower.includes('back') ||
+        lower.includes('rear') ||
+        lower.includes('environment') ||
+        lower.includes('belakang')
+      ) {
+
+        label += ' — BELAKANG';
+
+      }
+
+
+      option.textContent = label;
+
+      select.appendChild(option);
+
+    });
+
+
+    /*
+     * Select rear camera where possible.
+     */
+
+    let rearCamera =
+      list.find(function(camera) {
+
+        const label =
+          (camera.label || '').toLowerCase();
+
+        return (
+          label.includes('back') ||
+          label.includes('rear') ||
+          label.includes('environment') ||
+          label.includes('belakang')
+        );
+
+      });
+
+
+    selectedCameraId =
+      rearCamera ?
+      rearCamera.id :
+      list[0].id;
+
+
+    select.value =
+      selectedCameraId;
+
+    select.disabled = false;
+
+
+    select.onchange = function() {
+
+      selectedCameraId =
+        this.value;
+
+      if (scannerRunning) {
+
+        restartScanner();
+
+      }
+
+    };
+
+  }
+
+
+  /*
+   * =====================================================
+   * START SCANNER
+   * =====================================================
+   */
+
+  async function startScanner() {
+
+    if (scannerRunning) {
+      return;
+    }
+
+
+    document.getElementById(
+      'startButton'
+    ).disabled = true;
+
+
+    document.getElementById(
+      'stopButton'
+    ).disabled = false;
+
+
+    hideResult();
+
+
+    setStatus(
+      'Meminta akses kamera...',
+      'warning'
+    );
+
+
+    try {
+
+      /*
+       * If camera list hasn't been loaded,
+       * request permission first.
+       */
+
+      if (!selectedCameraId) {
+
+        const stream =
+          await navigator.mediaDevices.getUserMedia({
+            video: true,
+            audio: false
+          });
+
+
+        stream.getTracks().forEach(function(track) {
+          track.stop();
+        });
+
+
+        cameras =
+          await Html5Qrcode.getCameras();
+
+
+        if (!cameras || cameras.length === 0) {
+
+          throw new Error(
+            'Kamera tidak ditemukan.'
+          );
+
+        }
+
+
+        populateCameraSelect(cameras);
+
+      }
+
+
+      if (!selectedCameraId) {
+
+        throw new Error(
+          'Tidak ada kamera yang dipilih.'
+        );
+
+      }
+
+
+      scanner =
+        new Html5Qrcode('reader');
+
+
+      setStatus(
+        'Mengaktifkan kamera...',
+        'warning'
+      );
+
+
+      await scanner.start(
+
+        selectedCameraId,
+
+        {
+          fps: 10,
+
+          qrbox: function(
+            viewfinderWidth,
+            viewfinderHeight
+          ) {
+
+            const minEdge =
+              Math.min(
+                viewfinderWidth,
+                viewfinderHeight
+              );
+
+            const size =
+              Math.floor(
+                Math.min(
+                  300,
+                  minEdge * 0.72
+                )
+              );
+
+            return {
+              width: size,
+              height: size
+            };
+
+          },
+
+          aspectRatio: 1.0
+
+        },
+
+        function(decodedText) {
+
+          handleSuccessfulScan(
+            decodedText
+          );
+
+        },
+
+        function(errorMessage) {
+
+          /*
+           * Normal scanner decode failures
+           * are intentionally ignored.
+           */
+
+        }
+
+      );
+
+
+      scannerRunning = true;
+
+
+      setStatus(
+        'SIAP SCAN — ARAHKAN QR KE KAMERA',
+        'ok'
+      );
+
+
+    } catch (error) {
+
+      scannerRunning = false;
+
+      document.getElementById(
+        'startButton'
+      ).disabled = false;
+
+      document.getElementById(
+        'stopButton'
+      ).disabled = true;
+
+
+      handleCameraError(error);
+
+    }
+
+  }
+
+
+  /*
+   * =====================================================
+   * STOP SCANNER
+   * =====================================================
+   */
+
+  async function stopScanner() {
+
+    if (!scanner) {
+
+      scannerRunning = false;
+
+      document.getElementById(
+        'startButton'
+      ).disabled = false;
+
+      document.getElementById(
+        'stopButton'
+      ).disabled = true;
+
+      return;
+
+    }
+
+
+    try {
+
+      if (scannerRunning) {
+
+        await scanner.stop();
+
+      }
+
+    } catch (error) {
+
+      console.log(
+        'Scanner stop:',
+        error
+      );
+
+    }
+
+
+    try {
+
+      scanner.clear();
+
+    } catch (error) {
+
+      console.log(
+        'Scanner clear:',
+        error
+      );
+
+    }
+
+
+    scanner = null;
+
+    scannerRunning = false;
+
+
+    document.getElementById(
+      'startButton'
+    ).disabled = false;
+
+    document.getElementById(
+      'stopButton'
+    ).disabled = true;
+
+
+    setStatus(
+      'Scanner dihentikan.',
+      'warning'
+    );
+
+  }
+
+
+  /*
+   * =====================================================
+   * RESTART
+   * =====================================================
+   */
+
+  async function restartScanner() {
+
+    await stopScanner();
+
+    setTimeout(function() {
+
+      startScanner();
+
+    }, 300);
+
+  }
+
+
+  /*
+   * =====================================================
+   * SUCCESSFUL SCAN
+   * =====================================================
+   */
+
+  async function handleSuccessfulScan(
+    decodedText
+  ) {
+
+    const now =
+      Date.now();
+
+
+    /*
+     * Prevent repeated scan of same QR
+     * within 3 seconds.
+     */
+
+    if (
+      decodedText === lastScannedText &&
+      now - lastScanTime < 3000
+    ) {
+
+      return;
+
+    }
+
+
+    lastScannedText =
+      decodedText;
+
+    lastScanTime =
+      now;
+
+
+    await stopScanner();
+
+
+    document.getElementById(
+      'resultCard'
+    ).classList.add('visible');
+
+
+    document.getElementById(
+      'resultToken'
+    ).textContent =
+      decodedText;
+
+
+    document.getElementById(
+      'resultStatus'
+    ).textContent =
+      'QR berhasil dibaca oleh scanner V9.2.';
+
+
+    setStatus(
+      'QR berhasil dibaca. Scanner dihentikan sementara.',
+      'ok'
+    );
+
+
+    /*
+     * V9.2A:
+     * NO DATABASE ACTION YET.
+     *
+     * Backend validation will be connected
+     * in the next stage.
+     */
+
+    console.log(
+      'QR TOKEN:',
+      decodedText
+    );
+
+  }
+
+
+  /*
+   * =====================================================
+   * RESULT
+   * =====================================================
+   */
+
+  function hideResult() {
+
+    document.getElementById(
+      'resultCard'
+    ).classList.remove('visible');
+
+  }
+
+
+  /*
+   * =====================================================
+   * STATUS
+   * =====================================================
+   */
+
+  function setStatus(
+    message,
+    type
+  ) {
+
+    const element =
+      document.getElementById(
+        'scannerStatus'
+      );
+
+
+    element.textContent =
+      message;
+
+
+    element.className =
+      'status';
+
+
+    if (type) {
+
+      element.classList.add(type);
+
+    }
+
+  }
+
+
+  /*
+   * =====================================================
+   * CAMERA ERROR DIAGNOSTIC
+   * =====================================================
+   */
+
+  function handleCameraError(error) {
+
+    console.error(
+      'V9.2 CAMERA ERROR:',
+      error
+    );
+
+
+    let name =
+      error &&
+      error.name ?
+      error.name :
+      'UnknownError';
+
+
+    let message = '';
+
+
+    switch (name) {
+
+      case 'NotAllowedError':
+
+        message =
+          'Akses kamera ditolak. ' +
+          'Izinkan kamera untuk situs ini melalui pengaturan browser.';
+
+        break;
+
+
+      case 'PermissionDeniedError':
+
+        message =
+          'Izin kamera ditolak oleh browser.';
+
+        break;
+
+
+      case 'NotFoundError':
+
+        message =
+          'Kamera tidak ditemukan pada perangkat.';
+
+        break;
+
+
+      case 'NotReadableError':
+
+        message =
+          'Kamera sedang digunakan aplikasi lain ' +
+          'atau tidak dapat dibaca browser.';
+
+        break;
+
+
+      case 'OverconstrainedError':
+
+        message =
+          'Konfigurasi kamera tidak cocok dengan perangkat. ' +
+          'Coba pilih kamera lain.';
+
+        break;
+
+
+      case 'SecurityError':
+
+        message =
+          'Browser memblokir akses kamera karena alasan keamanan. ' +
+          'Pastikan halaman dibuka melalui HTTPS.';
+
+        break;
+
+
+      case 'AbortError':
+
+        message =
+          'Permintaan kamera dibatalkan oleh browser.';
+
+        break;
+
+
+      default:
+
+        message =
+          error && error.message ?
+          error.message :
+          'Kamera tidak dapat diakses.';
+
+    }
+
+
+    setStatus(
+      'ERROR ' +
+      name +
+      ': ' +
+      message,
+      'error'
+    );
+
+
+    document.getElementById(
+      'startButton'
+    ).disabled = false;
+
+
+    document.getElementById(
+      'stopButton'
+    ).disabled = true;
+
+  }
+
+</script>
+
+</body>
+</html>
